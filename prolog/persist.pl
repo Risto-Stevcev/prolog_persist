@@ -1,6 +1,7 @@
 :- module(persist,
          [find_term/2,
           add_term/2,
+          replace_term/3,
           remove_term/2]).
 :- use_module(library(reif), [if_/3, (=)/3]).
 :- use_module(library(settings), [set_setting/2, setting/4]).
@@ -30,6 +31,32 @@ remove_term(Term, ModuleName) :-
     module_property(ModuleName, file(File)),
     internal:remove_term(Term, File).
 
+
+
+internal:replace_term(OldTerm, NewTerm, InputStream, OutputStream, SeparatorFn) :-
+    read(InputStream, InputTerm),
+    setting(separator_fn, NewSeparatorFn),
+    if_(InputTerm = OldTerm,
+        (call(SeparatorFn, OutputStream), portray_clause(OutputStream, NewTerm)),
+        (InputTerm = end_of_file ->
+         true ;
+         (call(SeparatorFn, OutputStream), portray_clause(OutputStream, InputTerm)))),
+    if_(InputTerm = end_of_file, true,
+        internal:replace_term(OldTerm, NewTerm, InputStream, OutputStream, NewSeparatorFn)).
+
+internal:replace_term(OldTerm, NewTerm, File) :-
+    setup_call_cleanup(
+        (open(File, read, InputStream), open(File, write, OutputStream)),
+        internal:replace_term(OldTerm, NewTerm, InputStream, OutputStream, internal:noop),
+        (close(InputStream), close(OutputStream))
+    ).
+
+replace_term(OldTerm, NewTerm, ModuleName) :-
+    module_property(ModuleName, file(File)),
+    internal:replace_term(OldTerm, NewTerm, File).
+
+
+
 internal:find_in_stream(Term, InputStream) :-
     read(InputStream, InputTerm),
     if_(InputTerm = Term,
@@ -47,6 +74,8 @@ internal:find_term(Term, File) :-
 find_term(Term, ModuleName) :-
     module_property(ModuleName, file(File)),
     internal:find_term(Term, File).
+
+
 
 internal:add_term(Term, File) :-
     setup_call_cleanup(
