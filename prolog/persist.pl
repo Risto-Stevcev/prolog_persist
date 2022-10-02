@@ -7,12 +7,12 @@
 :- use_module(library(settings), [set_setting/2, setting/4]).
 
 /** <module> Persists facts into a file
- * - This is somewhat like a mix between `library(persistency)` and library(setting)
- * - It's (currently) less efficient, intended for small-ish files or one-at-a-time updates,
+ * * This is somewhat like a mix between `library(persistency)` and library(setting)
+ * * It's (currently) less efficient, intended for small-ish files or one-at-a-time updates,
      such as standalone apps.
- * - It preserves the prolog terms as passed, not wrapping it in `assert`
- * - It's able to add clauses as well as facts, any prolog term
- * - The use case for this is to modify existing modules, preserving all clauses
+ * * It preserves the prolog terms as passed, not wrapping it in `assert`
+ * * It's able to add clauses as well as facts, any prolog term
+ * * The use case for this is to modify existing modules, preserving all clauses
  */
 
 :- setting(separator_fn, callable, nl, "The separator function to use between terms").
